@@ -1,0 +1,47 @@
+Flujo de analítica de datos en Coca-Cola
+
+FUENTES DE DATOS
+
+↓
+
+Ventas de productos
+Información de clientes
+Redes sociales
+Encuestas a consumidores
+Datos de inventario
+
+↓
+
+ALMACENAMIENTO
+
+↓
+
+Bases de datos
+Servidores de la empresa
+Almacenamiento en la nube
+Archivos de ventas e inventario
+
+↓
+
+ANÁLISIS
+
+↓
+
+Análisis de las ventas
+Identificación de productos más vendidos
+Identificación de tendencias de consumo
+Analítica descriptiva
+Analítica predictiva
+Pronóstico de la demanda
+
+↓
+
+VISUALIZACIÓN
+
+↓
+
+Gráficas de ventas
+Tablas de resultados
+Dashboards
+Indicadores de rendimiento
+Reportes para la toma de decisiones
