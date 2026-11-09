@@ -1,0 +1,59 @@
+// ============================================================
+// Semana 14 - Medidas DAX sobre el indicador "ventas"
+// Modelo: tabla ventas (fecha, categoria, ventas_cop) relacionada con
+// la tabla Calendario por ventas[fecha] -> Calendario[Date]
+// ============================================================
+
+// Tabla de calendario (Modelado > Nueva tabla). Debe marcarse como tabla de fechas.
+Calendario =
+ADDCOLUMNS (
+    CALENDAR ( DATE ( 2023, 1, 1 ), DATE ( 2025, 12, 31 ) ),
+    "Anio", YEAR ( [Date] ),
+    "AnioMes", FORMAT ( [Date], "yyyy-mm" )
+)
+
+
+// ------------------------------------------------------------
+// MEDIDA 1: Media móvil de 3 meses
+// Es el equivalente en DAX de mensual.rolling(3).mean() de pandas.
+// Usada en una gráfica con el mes en el eje, suaviza la serie.
+// ------------------------------------------------------------
+Ventas Media Movil 3M =
+VAR Ventana =
+    DATESINPERIOD ( Calendario[Date], MAX ( Calendario[Date] ), -3, MONTH )
+VAR MesesEnVentana =
+    CALCULATE ( DISTINCTCOUNT ( Calendario[AnioMes] ), Ventana )
+VAR VentasVentana =
+    CALCULATE ( SUM ( ventas[ventas_cop] ), Ventana )
+RETURN
+    IF ( MesesEnVentana = 3, DIVIDE ( VentasVentana, 3 ) )
+
+// Por qué está escrita así:
+//  - DATESINPERIOD arma la ventana de 3 meses terminando en el último día del mes
+//    que se está evaluando; sirve igual a nivel de mes, trimestre o año.
+//  - El IF devuelve BLANK en los dos primeros meses de la serie (ene y feb 2023),
+//    donde no hay 3 meses completos, igual que pandas devuelve NaN. Así no se
+//    muestra un promedio engañoso hecho con menos datos.
+//  - Las VAR se calculan una sola vez y hacen la medida más fácil de leer.
+//  - DIVIDE evita errores de división entre cero.
+
+
+// ------------------------------------------------------------
+// MEDIDA 2: Crecimiento anual %
+// Compara el periodo actual contra el mismo periodo del año anterior.
+// ------------------------------------------------------------
+Crecimiento Anual % =
+VAR VentasActual =
+    SUM ( ventas[ventas_cop] )
+VAR VentasAnioAnterior =
+    CALCULATE ( SUM ( ventas[ventas_cop] ), SAMEPERIODLASTYEAR ( Calendario[Date] ) )
+RETURN
+    DIVIDE ( VentasActual - VentasAnioAnterior, VentasAnioAnterior )
+
+// Formato: porcentaje con 1 decimal.
+// Cómo comprobarla: con la segmentación en año debe dar 10.7 % en 2024 y
+// 11.6 % en 2025 (los mismos valores que calcula analisis_temporal.py);
+// en 2023 queda en blanco porque no existe 2022.
+//  - SAMEPERIODLASTYEAR desplaza el filtro de fechas exactamente un año atrás,
+//    por eso la misma medida sirve por mes, trimestre o año.
+//  - Con DIVIDE, el primer año no marca error: simplemente no muestra valor.
